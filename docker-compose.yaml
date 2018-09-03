@@ -1,0 +1,11 @@
+version: "3"
+services:
+  git2wp:
+    build: .
+    network_mode: host
+    image: git2wp
+    environment:
+      - GIT_REPO=
+      - WP_URL=
+      - WP_USER=
+      - WP_PASSWD=
