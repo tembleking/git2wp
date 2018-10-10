@@ -157,15 +157,26 @@ func uploadMissingImages(client *wordpress.Client, missingImages []*object.File)
 }
 
 func findAllRemoteImages(client *wordpress.Client) (remoteImages []string, err error) {
-	media, response, err := client.Media.List(context.Background(), nil)
-	if err != nil {
-		panic(err)
-	}
-	defer response.Body.Close()
+	options := &wordpress.MediaListOptions{}
+	options.PerPage = 100
+	options.MediaType = "image"
+	options.Page = 1
 
-	for _, image := range media {
-		parse, _ := url.Parse(image.SourceURL)
-		remoteImages = append(remoteImages, path.Base(parse.Path))
+
+	for {
+		media, response, err := client.Media.List(context.Background(), options)
+		if err != nil || len(media) == 0 {
+			break
+		}
+		response.Body.Close()
+
+		for _, image := range media {
+			parse, _ := url.Parse(image.SourceURL)
+			remoteImages = append(remoteImages, path.Base(parse.Path))
+		}
+		fmt.Print(len(remoteImages), " remote image(s) found.\r")
+
+		options.Page++
 	}
 	return
 }
